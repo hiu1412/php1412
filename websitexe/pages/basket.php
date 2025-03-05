@@ -65,10 +65,14 @@ while ($row = mysqli_fetch_assoc($result)) {
                         <td class="border p-2"> <?= htmlspecialchars($item['make'] . ' ' . $item['model']) ?> </td>
                         <td class="border p-2"> <?= number_format($item['price']) ?> VND </td>
                         <td class="border p-2">
-                            <form action="update_quantity.php" method="POST">
+                        <td class="border p-2">
+                            <form action="update_quantity.php" method="POST" class="flex items-center">
                                 <input type="hidden" name="car_id" value="<?= $item['car_id'] ?>">
-                                <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="w-12 text-center border" onchange="this.form.submit()">
+                                <button type="submit" name="action" value="decrease" class="bg-gray-300 px-2 py-1">-</button>
+                                <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="w-12 text-center border mx-2" readonly>
+                                <button type="submit" name="action" value="increase" class="bg-gray-300 px-2 py-1">+</button>
                             </form>
+                        </td>
                         </td>
                         <td class="border p-2"> <?= number_format($item['price'] * $item['quantity']) ?> VND </td>
                         <td class="border p-2">

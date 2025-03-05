@@ -4,6 +4,5 @@
         <li class="mb-3"><a href="index.php" class="hover:text-gray-400">Dashboard</a></li>
         <li class="mb-3"><a href="./manager/users.php" class="hover:text-gray-400">Quản lý User</a></li>
         <li class="mb-3"><a href="./car/cars.php" class="hover:text-gray-400">Quản lý Xe</a></li>
-        <li class="mb-3"><a href="./car/cars.php" class="hover:text-gray-400">Quản lý Xe</a></li>
     </ul>
 </div>
