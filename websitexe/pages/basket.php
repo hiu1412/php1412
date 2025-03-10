@@ -40,7 +40,6 @@ while ($row = mysqli_fetch_assoc($result)) {
 ?>
 
 <?php require_once '../templates/header.php'; ?>
-
 <div class="container mx-auto mt-6">
     <h2 class="text-2xl font-bold text-center">Giỏ Hàng</h2>
 
@@ -59,22 +58,20 @@ while ($row = mysqli_fetch_assoc($result)) {
             <tbody>
                 <?php foreach ($basket_items as $item) : ?>
                     <tr>
-                        <td class="border p-2">
-                            <img src="<?= $item['image_url'] ?>" alt="Ảnh xe" class="w-24 h-16 object-cover">
+                        <td class="border p-2 text-center">
+                            <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Ảnh xe" class="w-24 h-16 object-cover">
                         </td>
-                        <td class="border p-2"> <?= htmlspecialchars($item['make'] . ' ' . $item['model']) ?> </td>
-                        <td class="border p-2"> <?= number_format($item['price']) ?> VND </td>
-                        <td class="border p-2">
+                        <td class="border p-2"><?= htmlspecialchars($item['make'] . ' ' . $item['model']) ?></td>
+                        <td class="border p-2"><?= number_format($item['price']) ?> VND</td>
                         <td class="border p-2">
                             <form action="update_quantity.php" method="POST" class="flex items-center">
                                 <input type="hidden" name="car_id" value="<?= $item['car_id'] ?>">
-                                <button type="submit" name="action" value="decrease" class="bg-gray-300 px-2 py-1">-</button>
+                                <button type="submit" name="action" value="decrease" class="bg-gray-300 px-2 py-1 rounded">-</button>
                                 <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="w-12 text-center border mx-2" readonly>
-                                <button type="submit" name="action" value="increase" class="bg-gray-300 px-2 py-1">+</button>
+                                <button type="submit" name="action" value="increase" class="bg-gray-300 px-2 py-1 rounded">+</button>
                             </form>
                         </td>
-                        </td>
-                        <td class="border p-2"> <?= number_format($item['price'] * $item['quantity']) ?> VND </td>
+                        <td class="border p-2"><?= number_format($item['price'] * $item['quantity']) ?> VND</td>
                         <td class="border p-2">
                             <form action="remove_from_cart.php" method="POST">
                                 <input type="hidden" name="car_id" value="<?= $item['car_id'] ?>">
@@ -90,17 +87,24 @@ while ($row = mysqli_fetch_assoc($result)) {
             <h3 class="text-xl font-bold">Tổng cộng: <?= number_format($total_price) ?> VND</h3>
         </div>
 
-        <?php if ($user_id): ?>
-            <div class="text-center mt-6">
+        <div class="text-center mt-6">
+            <?php if (!$user_id): ?>
+                <a href="login.php" class="bg-yellow-500 text-white px-6 py-2 rounded text-lg inline-block">
+                    Đăng nhập để thanh toán
+                </a>
+            <?php else: ?>
                 <form action="checkout.php" method="POST">
-                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded text-lg">Thanh Toán</button>
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded text-lg">
+                        Thanh Toán
+                    </button>
                 </form>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
 
     <?php else : ?>
         <p class="text-center mt-4 text-gray-500">Giỏ hàng trống</p>
     <?php endif; ?>
 </div>
+
 
 <?php require_once '../templates/footer.php'; ?>
