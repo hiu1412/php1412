@@ -39,34 +39,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Tạo đơn hàng
-    $order_query = "INSERT INTO orders (user_id, total_price, payment_method, created_at) VALUES (?, ?, ?, NOW())";
+    $order_query = "INSERT INTO orders (user_id, total_price, payment_method, status, created_at) VALUES (?, ?, ?, 'pending', NOW())";
     $order_stmt = mysqli_prepare($conn, $order_query);
-    mysqli_stmt_bind_param($order_stmt, "ids", $user_id, $total_price, $payment_method);
-    if (mysqli_stmt_execute($order_stmt)) {
-        $order_id = mysqli_insert_id($conn);
+    if ($order_stmt) {
+        mysqli_stmt_bind_param($order_stmt, "ids", $user_id, $total_price, $payment_method);
+        if (mysqli_stmt_execute($order_stmt)) {
+            $order_id = mysqli_insert_id($conn);
 
-        // Lưu chi tiết đơn hàng
-        $detail_query = "INSERT INTO order_details (order_id, car_id, quantity, price) VALUES (?, ?, ?, ?)";
-        $detail_stmt = mysqli_prepare($conn, $detail_query);
-        foreach ($basket_items as $item) {
-            mysqli_stmt_bind_param($detail_stmt, "iiid", $order_id, $item['car_id'], $item['quantity'], $item['price']);
-            mysqli_stmt_execute($detail_stmt);
+            // Lưu chi tiết đơn hàng
+            $detail_query = "INSERT INTO order_details (order_id, car_id, quantity, price) VALUES (?, ?, ?, ?)";
+            $detail_stmt = mysqli_prepare($conn, $detail_query);
+            if ($detail_stmt) {
+                foreach ($basket_items as $item) {
+                    mysqli_stmt_bind_param($detail_stmt, "iiid", $order_id, $item['car_id'], $item['quantity'], $item['price']);
+                    mysqli_stmt_execute($detail_stmt);
+                }
+            }
+
+            // Xóa giỏ hàng sau khi đặt hàng thành công
+            $delete_query = "DELETE FROM basket WHERE user_id = ?";
+            $delete_stmt = mysqli_prepare($conn, $delete_query);
+            if ($delete_stmt) {
+                mysqli_stmt_bind_param($delete_stmt, "i", $user_id);
+                mysqli_stmt_execute($delete_stmt);
+            }
+
+            // Cập nhật trạng thái đơn hàng thành completed
+            $update_order_status_query = "UPDATE orders SET status = 'completed' WHERE id = ?";
+            $update_stmt = mysqli_prepare($conn, $update_order_status_query);
+            if ($update_stmt) {
+                mysqli_stmt_bind_param($update_stmt, "i", $order_id);
+                mysqli_stmt_execute($update_stmt);
+            }
+
+            // Chuyển hướng đến trang thành công
+            $_SESSION['success_message'] = "Đơn hàng của bạn đã được đặt thành công!";
+            header("Location: order_success.php?order_id=" . $order_id);
+            exit();
+        } else {
+            $_SESSION['error_message'] = "Lỗi khi xử lý thanh toán. Vui lòng thử lại!";
+            header("Location: checkout.php");
+            exit();
         }
-
-        // Xóa giỏ hàng sau khi đặt hàng thành công
-        $delete_query = "DELETE FROM basket WHERE user_id = ?";
-        $delete_stmt = mysqli_prepare($conn, $delete_query);
-        mysqli_stmt_bind_param($delete_stmt, "i", $user_id);
-        mysqli_stmt_execute($delete_stmt);
-
-        // Chuyển hướng đến trang thành công
-        $_SESSION['success_message'] = "Đơn hàng của bạn đã được đặt thành công!";
-        header("Location: order_success.php?order_id=" . $order_id);
-        exit();
-    } else {
-        $_SESSION['error_message'] = "Lỗi khi xử lý thanh toán. Vui lòng thử lại!";
-        header("Location: checkout.php");
-        exit();
     }
 }
 ?>
@@ -93,7 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <option value="cod">Thanh toán khi nhận hàng (COD)</option>
         </select>
 
-        <button type="checkout.php" class="bg-green-500 text-white px-6 py-2 rounded mt-4 w-full">
+        <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded mt-4 w-full">
             Xác nhận thanh toán
         </button>
     </form>
